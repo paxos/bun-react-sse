@@ -4,22 +4,21 @@ import { randomUUID } from "crypto";
 console.log("Good Morning!");
 
 const eventEmitter = new EventEmitter();
-process.nextTick(() => {
-  eventEmitter.emit("sse", 42);
-});
 
-const sseEvents = new EventEmitter();
-export const sse = (data) => {
-  sseEvents.emit(
-    "sse",
-    `id: ${randomUUID()}\ndata: ${JSON.stringify(data)}\n\n`,
-  );
-};
+// eventEmitter.on("sse", () => {
+//   console.log("Emitter emitted");
+// });
+
+const lorem =
+  "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
+
+const lorems = lorem.split(" ");
 
 let counter = 0;
 setInterval(() => {
-  sse({ payload: { date: Date.now(), times: counter++ } });
-}, 2000);
+  const randomLorem = lorems[Math.floor(Math.random() * lorems.length)];
+  eventEmitter.emit("sse", randomLorem);
+}, 200);
 
 Bun.serve({
   port: 8081,
@@ -29,19 +28,21 @@ Bun.serve({
     if (url.pathname === "/sse") {
       let outputStream = new ReadableStream({
         start(controller) {
-          sseEvents.once("sse", () => {
-            controller.enqueue(`retry: 3000\n\n`);
-          });
-        },
-        pull(controller: ReadableStreamDefaultController) {
-          sseEvents.on("sse", (data) => {
+          console.log("START?");
+          // eventEmitter.once("sse", () => {
+          //   controller.enqueue(`retry: 3000\n\n`);
+          // });
+          eventEmitter.on("sse", (data) => {
+            console.log("EVENT");
+            console.log(data);
             const queue = [Buffer.from(data)];
             const chunk = queue.shift();
             controller.enqueue(chunk);
           });
         },
+        // pull(controller: ReadableStreamDefaultController) {},
         cancel(controller: ReadableStreamDefaultController) {
-          sseEvents.removeAllListeners("sse");
+          eventEmitter.removeAllListeners("sse");
           controller.close();
         },
       });

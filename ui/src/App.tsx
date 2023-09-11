@@ -31,8 +31,8 @@ function App() {
       const { value, done } = await reader.read();
       if (done) break;
       if (value) {
-        setContent(content + value);
-        console.log("Received", value);
+        setContent((v) => v + " " + value);
+        console.log("Received", content);
       }
     }
 
