@@ -30,7 +30,7 @@ function App() {
     while (true) {
       const { value, done } = await reader.read();
       if (done) break;
-      if (content) {
+      if (value) {
         setContent(content + value);
         console.log("Received", value);
       }

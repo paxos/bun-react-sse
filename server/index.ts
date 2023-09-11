@@ -28,12 +28,6 @@ Bun.serve({
     if (url.pathname === "/") return new Response("Home page!");
     if (url.pathname === "/sse") {
       let outputStream = new ReadableStream({
-        // start(controller) {
-        //   controller.enqueue("hello");
-        //   controller.enqueue("world");
-        //   controller.close();
-        // },
-
         start(controller) {
           sseEvents.once("sse", () => {
             controller.enqueue(`retry: 3000\n\n`);
